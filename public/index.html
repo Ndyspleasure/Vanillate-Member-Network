@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Temukan komunitas Discord sesuai minatmu bersama Vanillate Member Network."
+    />
+    <title>Vanillate Member Network</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script type="module" src="/member.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="logo" href="/"
+        ><i>v</i><span>vanillate<small>Member Network</small></span></a
+      >
+      <nav class="links">
+        <a href="#communities">Jelajahi komunitas</a
+        ><a href="/admin">Panel admin ↗</a
+        ><a class="button" href="/auth/discord/start" id="connect"
+          >Hubungkan Discord</a
+        >
+      </nav>
+    </header>
+    <main class="container">
+      <section class="hero">
+        <div>
+          <div class="eyebrow">Temukan tempatmu bertumbuh</div>
+          <h1>Minat yang sama.<br /><em>Koneksi yang baru.</em></h1>
+          <p>
+            Temukan komunitas Discord yang cocok denganmu. Dari obrolan santai
+            sampai proyek besar, semuanya dimulai dari satu koneksi.
+          </p>
+          <div class="actions">
+            <a class="button" href="#communities"
+              >Jelajahi komunitas <span>↗</span></a
+            ><a class="button secondary" href="/auth/discord/start"
+              >Daftar dengan Discord</a
+            >
+          </div>
+          <p class="muted">Pilihan komunitas tetap di tanganmu.</p>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="floating-card">
+            <div class="icon">✳</div>
+            <div>
+              <strong>Temukan minatmu</strong>
+              <p>Gaming, seni, teknologi, dan lainnya</p>
+            </div>
+            <span class="match">DISCOVER</span>
+          </div>
+          <div class="floating-card">
+            <div class="icon">↗</div>
+            <div>
+              <strong>Bangun koneksi baru</strong>
+              <p>Orang baru, percakapan yang berarti</p>
+            </div>
+          </div>
+          <div class="floating-card">
+            <div class="icon">✓</div>
+            <div>
+              <strong>Kamu yang menentukan</strong>
+              <p>Persetujuan jelas. Bisa dicabut kapan saja.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div class="note">
+        <span>◈</span>
+        <p>
+          <strong>Akunmu, keputusanmu.</strong> Menghubungkan Discord tidak
+          langsung memasukkanmu ke server. Auto-join hanya berlaku untuk
+          komunitas yang kamu setujui, untuk satu kali bergabung dalam 30 hari.
+          Kamu bisa mencabutnya kapan saja.
+        </p>
+      </div>
+      <section id="profile" class="panel" hidden>
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Ruang anggota</span>
+            <h2 id="member-name">Profil saya</h2>
+          </div>
+          <div class="actions">
+            <button class="secondary small" id="show-activity">Riwayat</button
+            ><button class="danger small" id="disconnect">
+              Cabut koneksi Discord</button
+            ><button class="secondary small" id="logout">Keluar</button>
+          </div>
+        </div>
+        <form id="interests-form">
+          <label
+            >Minatmu, pisahkan dengan koma<input
+              name="interests"
+              maxlength="300"
+              placeholder="gaming, musik, teknologi" /></label
+          ><button type="submit">Simpan minat</button>
+        </form>
+        <div id="activity" hidden></div>
+      </section>
+      <section id="recommendations" hidden>
+        <div class="section-heading">
+          <div class="eyebrow">Pilihan untukmu</div>
+          <h2>Temukan kecocokan baru</h2>
+        </div>
+        <div class="grid" id="recommended-grid"></div>
+      </section>
+      <section id="communities">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">Jelajahi koneksi baru</div>
+            <h2>Komunitas pilihan</h2>
+            <p>Temukan ruang yang sesuai dengan minat dan ceritamu.</p>
+          </div>
+          <form class="filters" id="filter-form">
+            <input
+              name="tag"
+              placeholder="Cari minat"
+              aria-label="Filter minat"
+              maxlength="30"
+            /><select name="language" aria-label="Bahasa">
+              <option value="">Semua bahasa</option>
+              <option value="id">Indonesia</option>
+              <option value="en">English</option></select
+            ><button type="submit" class="secondary">Cari</button>
+          </form>
+        </div>
+        <div class="grid" id="catalog">
+          <div class="empty">Memuat komunitas…</div>
+        </div>
+        <button class="secondary" id="load-more" hidden>Muat berikutnya</button>
+      </section>
+      <footer class="footer">
+        <span>© Vanillate. Ruang untuk bertemu dan bertumbuh.</span
+        ><a href="/admin">Kelola Member Network ↗</a>
+      </footer>
+    </main>
+    <dialog class="dialog" id="consent-dialog">
+      <h2 id="consent-title">Setujui komunitas</h2>
+      <div class="consent-copy">
+        Dengan persetujuan ini, bot Vanillate Member Network dapat memasukkan
+        akun Discord kamu ke <strong id="consent-community"></strong> satu kali
+        melalui campaign dalam 30 hari. Izin hanya berlaku untuk komunitas ini.
+        Persetujuan dapat dicabut dari kartu komunitas. Menghubungkan kembali
+        akun tidak memperbarui izin yang telah dicabut.
+      </div>
+      <form id="consent-form">
+        <label class="checkbox"
+          ><input type="checkbox" name="agree" required /><span
+            >Saya memahami dan menyetujui auto-join ke komunitas ini.</span
+          ></label
+        >
+        <div class="actions">
+          <button type="submit">Setujui selama 30 hari</button
+          ><button type="button" class="secondary" id="cancel-consent">
+            Batal
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <div id="status" class="status" role="status" hidden></div>
+  </body>
+</html>
