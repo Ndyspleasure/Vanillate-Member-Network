@@ -123,8 +123,8 @@ export function worker(db, crypt, discord, config) {
             error = err.status
               ? `DISCORD_${err.status}`
               : "UPSTREAM_UNAVAILABLE";
-            if (err.status === 429 && j.attempts < 5) {
-              status = "retry";
+            if (err.status === 429) {
+              status = j.attempts < 5 ? "retry" : "failed";
               const delay = Math.min(86400, Math.max(1, err.retryAfter || 30));
               await tx.query(
                 "UPDATE member_network.jobs SET next_attempt_at=now()+($2 * interval '1 second') WHERE id=$1",
