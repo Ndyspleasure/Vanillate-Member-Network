@@ -10,11 +10,18 @@ Implementasi dan perbedaan terhadap rancangan awal: `docs/implementation.md`. Ko
 
 Pemeriksaan sintaks, tes API/database/worker/upstream dengan PGlite dan layanan eksternal tiruan, serta browser desktop/mobile dijalankan. Run penuh 22 tes lolos, ditambah tes regresi penutupan campaign. Pemeriksaan browser desktop/mobile lolos. Audit dependency produksi melaporkan nol kerentanan. Hasil final juga dicatat di PR. Tidak ada produksi yang disentuh. Pengujian browser mencakup alur admin dan member sampai hasil auto-join tiruan serta pencabutan consent.
 
-## Pekerjaan terbuka
+## Readiness Wispbyte
 
-- MN-001: Operator membuat Discord Application baru dan memasukkan secret hanya ke host backend. Verifikasi bot, permission dan OAuth callback live pada test guild.
-- MN-002: Review bootstrap SQL, backup dan jalankan migrasi secara eksplisit pada database CMS existing. Uji TLS dan role runtime terbatas; belum ada migrasi produksi.
-- MN-003: Pasang service mandiri, origin HTTPS, UUID allowlist dan cleanup harian. Auto-join bawaan mati sampai acceptance test selesai.
-- MN-004: Integrasi menu/halaman website CMS existing memerlukan perubahan repo website terpisah. Adapter API tersedia, panel admin layanan ini sudah ada.
-- MN-005: Portal mandiri untuk admin server umum, verifikasi izin individu Discord, retensi/penghapusan data member/job, multikey rotation, observasi membership dan rekonsiliasi hasil unknown belum tersedia. Jangan mengklaim fitur ini selesai.
-- MN-006: Sebelum menambah replika, uji PostgreSQL nyata, distributed rate limiting dan konkurensi. Tes PGlite tidak menggantikan uji tersebut.
+Tersedia entry point index.js, fallback SERVER_PORT, preflight offline/online, migration upgrade immutable, provisioning role database terbatas, keyring/rotasi, retensi otomatis harian dan penghapusan identitas setelah revoke. CI juga menyiapkan artifact upload Wispbyte dan menguji PostgreSQL nyata, browser serta image non-root. Bug wake worker saat sedang sibuk telah diperbaiki dan diuji regresi.
+
+## Gate aktivasi yang membutuhkan akun host
+
+- Buat Discord Application baru dan masukkan secret ke host, bukan chat/repository.
+- Pilih Node.js 24 pada server Wispbyte terpisah, tentukan primary port dan subdomain HTTPS aktual.
+- Backup, jalankan migrasi/provisioning dengan koneksi admin, lalu gunakan role runtime terbatas di host. Belum ada perubahan database produksi.
+- Isi UUID allowlist dan jalankan preflight pada host; uji OAuth/join live di server uji sebelum mengaktifkan auto-join.
+- Integrasi CMS existing disiapkan sebagai PR website tersendiri; URL publik backend belum dapat diisi sebelum subdomain ditentukan. Merge website memicu publikasi, sehingga tidak dilakukan sebagai bagian readiness.
+
+## Batas yang tetap berlaku
+
+Jalankan satu replika. Portal registrasi admin server umum dan observasi Gateway tidak termasuk release ini. Screening pending/hasil unknown tidak otomatis dianggap konversi. Tidak ada deployment produksi atau klaim live acceptance telah lolos.

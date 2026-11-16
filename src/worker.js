@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { one, audit } from "./db.js";
 export function worker(db, crypt, discord, config) {
+  let wakeRequested = false;
   let busy = false,
     timer,
     stopped = true;
@@ -18,6 +19,10 @@ export function worker(db, crypt, discord, config) {
         await discord.revoke(token.access_token);
         await tx.query(
           "UPDATE member_network.connections SET encrypted_tokens=NULL,revoke_pending=false WHERE member_id=$1",
+          [c.member_id],
+        );
+        await tx.query(
+          "UPDATE member_network.members SET discord_id=NULL,username='Akun dihapus',interests='{}',active=false,deleted_at=now() WHERE id=$1 AND delete_requested_at IS NOT NULL",
           [c.member_id],
         );
         await audit(tx, "worker", "oauth.revoked", c.member_id);
@@ -91,6 +96,7 @@ export function worker(db, crypt, discord, config) {
         );
         if (c?.encrypted_tokens) {
           let sending = false;
+          let phase = "refresh";
           try {
             let tokens = crypt.decrypt(c.encrypted_tokens, m.id);
             if (new Date(c.expires_at).getTime() < Date.now() + 60000) {
@@ -104,7 +110,9 @@ export function worker(db, crypt, discord, config) {
                 [m.id, crypt.encrypt(tokens, m.id), tokens.expires_in],
               );
             }
+            phase = "guild";
             await discord.guild(community.guild_id);
+            phase = "join";
             sending = true;
             status = await discord.join(
               community.guild_id,
@@ -127,7 +135,10 @@ export function worker(db, crypt, discord, config) {
                 "INSERT INTO member_network.runtime(key,value) VALUES ('discord_backoff',now()+($1 * interval '1 second')) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
                 [delay],
               );
-            } else if (err.status === 401 || (!sending && err.status === 400)) {
+            } else if (
+              (err.status === 401 && phase !== "guild") ||
+              (phase === "refresh" && err.status === 400)
+            ) {
               status = "failed";
               await tx.query(
                 "UPDATE member_network.members SET connection_status='expired' WHERE id=$1",
@@ -154,32 +165,38 @@ export function worker(db, crypt, discord, config) {
     busy = true;
     let wait = 900000;
     try {
-      const revoked = await revokeOne();
-      if (revoked) wait = 1500;
       const backoff = await one(
         db,
         "SELECT value FROM member_network.runtime WHERE key='discord_backoff' AND value>now()",
       );
       if (backoff)
         wait = Math.max(1000, new Date(backoff.value).getTime() - Date.now());
-      else if (await runOne()) wait = 1500;
       else {
-        const next = await one(
-          db,
-          `SELECT min(GREATEST(j.next_attempt_at,c.starts_at)) AS due FROM member_network.jobs j JOIN member_network.campaigns c ON c.id=j.campaign_id
+        const revoked = await revokeOne();
+        if (revoked) wait = 1500;
+        if (await runOne()) wait = 1500;
+        else {
+          const next = await one(
+            db,
+            `SELECT min(GREATEST(j.next_attempt_at,c.starts_at)) AS due FROM member_network.jobs j JOIN member_network.campaigns c ON c.id=j.campaign_id
           WHERE j.status IN ('queued','retry') AND c.status='running' AND c.ends_at>now()`,
-        );
-        if (next?.due && config.AUTO_JOIN_ENABLED)
-          wait = Math.min(
-            wait,
-            Math.max(1500, new Date(next.due).getTime() - Date.now()),
           );
+          if (next?.due && config.AUTO_JOIN_ENABLED)
+            wait = Math.min(
+              wait,
+              Math.max(1500, new Date(next.due).getTime() - Date.now()),
+            );
+        }
       }
     } catch {
       // No token, raw upstream error or SQL text is logged.
       wait = 30000;
     } finally {
       busy = false;
+      if (wakeRequested) {
+        wait = 10;
+        wakeRequested = false;
+      }
       if (!stopped) {
         clearTimeout(timer);
         timer = setTimeout(tick, wait);
@@ -196,6 +213,10 @@ export function worker(db, crypt, discord, config) {
     },
     wake() {
       if (stopped) return;
+      if (busy) {
+        wakeRequested = true;
+        return;
+      }
       clearTimeout(timer);
       timer = setTimeout(tick, 10);
       timer.unref();

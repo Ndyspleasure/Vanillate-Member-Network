@@ -75,6 +75,9 @@ function buttons(...bs) {
   return d;
 }
 async function load(append = false) {
+  document
+    .querySelectorAll("[data-view]")
+    .forEach((n) => n.classList.toggle("active", n.dataset.view === view));
   $("#overview-view").hidden = view !== "overview";
   $("#data-view").hidden = ![
     "members",
@@ -247,6 +250,8 @@ async function session() {
   try {
     const s = await api("/api/admin/session");
     role = s.role;
+    if (role !== "admin" && ["members", "audit"].includes(view))
+      view = "overview";
     $("#role").textContent = role === "admin" ? "Admin" : "Viewer";
     $("#login").hidden = true;
     $("#shell").hidden = false;
@@ -365,4 +370,6 @@ for (const kind of ["community", "campaign"])
       b.disabled = false;
     }
   });
+if (Object.hasOwn(titles, location.hash.slice(1)))
+  view = location.hash.slice(1);
 session();

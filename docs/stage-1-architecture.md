@@ -8,16 +8,16 @@ Tanggal: 16 November 2026, WIB. Status: rancangan untuk ditinjau, bukan implemen
 
 Audit dilakukan pada checkout lokal dan metadata database CMS melalui SELECT saja. Tidak membaca data member, token, atau secret. Tidak membuat project Supabase, aplikasi Discord, tabel, migration, atau deployment.
 
-| Komponen                  | Hasil                                                                                                                                            |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Repository Member Network | Kloning sukses, remote Ndyspleasure/Vanillate-Member-Network, belum memiliki commit atau kode                                                    |
-| Website CMS               | Astro, Tailwind, TypeScript dan Supabase; hosting statis                                                                                         |
-| Bot utama                 | Node.js, discord.js dan PostgreSQL; runtime terpisah                                                                                             |
-| Database CMS              | Infrastruktur CMS existing; identitas deployment tidak dipublikasikan                                                                            |
-| Database pemain           | Terpisah dari CMS dan tidak digunakan layanan baru                                                                                               |
-| Model admin               | `public.admin_users`, id UUID, username, display_name, role, last_login_at, created_at; role owner/admin/viewer                                  |
-| Integrasi lama            | `bot_commands`, `bot_panel_snapshots`, partnership*campaigns, guild*_ dan share\__ sudah ada; tidak digunakan ulang untuk pekerjaan layanan baru |
-| Namespace baru            | Tidak ditemukan tabel public dengan prefix literal `mn_`; pengecekan ulang wajib sebelum migration                                               |
+| Komponen                  | Hasil                                                                                                                                              |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Repository Member Network | Kloning sukses, remote Ndyspleasure/Vanillate-Member-Network, belum memiliki commit atau kode                                                      |
+| Website CMS               | Astro, Tailwind, TypeScript dan Supabase; hosting statis                                                                                           |
+| Bot utama                 | Node.js, discord.js dan PostgreSQL; runtime terpisah                                                                                               |
+| Database CMS              | Infrastruktur CMS existing; identitas deployment tidak dipublikasikan                                                                              |
+| Database pemain           | Terpisah dari CMS dan tidak digunakan layanan baru                                                                                                 |
+| Model admin               | `public.admin_users`, id UUID, username, display_name, role, last_login_at, created_at; role owner/admin/viewer                                    |
+| Integrasi lama            | `bot_commands`, `bot_panel_snapshots`, partnership*campaigns, guild*\_ dan share\_\_ sudah ada; tidak digunakan ulang untuk pekerjaan layanan baru |
+| Namespace baru            | Tidak ditemukan tabel public dengan prefix literal `mn_`; pengecekan ulang wajib sebelum migration                                                 |
 
 Acuan yang dibaca: CLAUDE.md bot dan website, claudereport.md bot, package.json kedua repo, astro.config.mjs, src/lib/supabase.ts, src/lib/admin-auth.ts, src/lib/admin-menu.ts, supabase/schema.sql, supabase/functions/cms-read/index.ts dan logic.ts, docs/ADMIN-CMS.md. Dokumen panjang dibaca bertahap; beberapa keluaran alat terpotong sehingga inventaris ini tidak dianggap audit seluruh kode atau semua instruksi baris demi baris yang belum tampil penuh.
 

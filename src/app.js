@@ -87,15 +87,11 @@ export async function buildApp({
         .code(409)
         .send({ error: "Data terkait tidak tersedia", request_id: req.id });
     const status = err.statusCode || (err.status === 429 ? 503 : 500);
-    reply
-      .code(status)
-      .send({
-        error:
-          status < 500
-            ? err.message
-            : "Layanan belum tersedia. Coba lagi nanti.",
-        request_id: req.id,
-      });
+    reply.code(status).send({
+      error:
+        status < 500 ? err.message : "Layanan belum tersedia. Coba lagi nanti.",
+      request_id: req.id,
+    });
   });
   async function admin(req, write = false, pii = false) {
     let token = req.headers.authorization?.match(/^Bearer (.+)$/)?.[1];
@@ -248,6 +244,17 @@ export async function buildApp({
     worker.wake();
     reply.clearCookie("mn_member", cookieOptions);
     return { ok: true };
+  });
+  app.post("/api/me/delete", async (req, reply) => {
+    const m = await member(req);
+    await svc.revokeConnection(m.id, m.id, { deleteIdentity: true });
+    worker.wake();
+    reply.clearCookie("mn_member", cookieOptions);
+    return {
+      ok: true,
+      message:
+        "Izin lokal dicabut. Identitas dihapus setelah revoke Discord selesai.",
+    };
   });
   app.get("/api/me/activity", async (req) => {
     const m = await member(req);
@@ -446,7 +453,12 @@ export async function buildApp({
     await admin(req);
     return {
       members: Number(
-        (await one(db, "SELECT count(*) FROM member_network.members")).count,
+        (
+          await one(
+            db,
+            "SELECT count(*) FROM member_network.members WHERE deleted_at IS NULL",
+          )
+        ).count,
       ),
       communities: Number(
         (await one(db, "SELECT count(*) FROM member_network.communities"))

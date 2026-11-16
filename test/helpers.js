@@ -30,6 +30,12 @@ export async function fixture() {
     "utf8",
   );
   await engine.exec(sql);
+  await engine.exec(
+    await readFile(
+      new URL("../db/upgrades/002_member_retention.sql", import.meta.url),
+      "utf8",
+    ),
+  );
   const db = {
     query: (sql, args) => engine.query(sql, args),
     tx: (fn) =>

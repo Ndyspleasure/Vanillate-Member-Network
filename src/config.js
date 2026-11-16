@@ -10,6 +10,7 @@ const uuidList = z
   )
   .pipe(z.array(z.uuid()));
 export function loadConfig(env = process.env) {
+  env = { ...env, PORT: env.PORT || env.SERVER_PORT || "3000" };
   const c = z
     .object({
       NODE_ENV: z
@@ -30,6 +31,16 @@ export function loadConfig(env = process.env) {
       DISCORD_BOT_TOKEN: z.string().min(1),
       DISCORD_REDIRECT_URI: z.url(),
       TOKEN_ENCRYPTION_KEY: z.string().regex(/^[a-fA-F0-9]{64}$/),
+      TOKEN_ENCRYPTION_PREVIOUS_KEYS: z
+        .string()
+        .default("")
+        .transform((s) =>
+          s
+            .split(",")
+            .map((x) => x.trim())
+            .filter(Boolean),
+        )
+        .pipe(z.array(z.string().regex(/^[a-fA-F0-9]{64}$/)).max(3)),
       ADMIN_USER_IDS: uuidList,
       VIEWER_USER_IDS: uuidList,
       AUTO_JOIN_ENABLED: z

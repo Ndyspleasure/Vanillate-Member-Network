@@ -310,3 +310,41 @@ test("completed campaign cannot be reopened via pause and start", async () => {
     await f.close();
   }
 });
+test("account deletion atomically revokes permissions before erasing identity", async () => {
+  const f = await fixture();
+  try {
+    const m = await member(f),
+      c = await community(f);
+    await f.svc.consent(m.id, c.id);
+    const cookie = await f.svc.session("member", m.id);
+    const r = await f.app.inject({
+      method: "POST",
+      url: "/api/me/delete",
+      headers: {
+        origin: "http://localhost:3000",
+        cookie: `mn_member=${cookie}`,
+      },
+      payload: {},
+    });
+    assert.equal(r.statusCode, 200);
+    const pending = (
+      await f.db.query("SELECT * FROM member_network.members WHERE id=$1", [
+        m.id,
+      ])
+    ).rows[0];
+    assert(pending.delete_requested_at);
+    assert.equal(pending.connection_status, "revoked");
+    assert.equal(await f.svc.getSession(cookie, "member"), undefined);
+    await f.work.revokeOne();
+    const erased = (
+      await f.db.query("SELECT * FROM member_network.members WHERE id=$1", [
+        m.id,
+      ])
+    ).rows[0];
+    assert.equal(erased.discord_id, null);
+    assert.equal(erased.username, "Akun dihapus");
+    assert(erased.deleted_at);
+  } finally {
+    await f.close();
+  }
+});

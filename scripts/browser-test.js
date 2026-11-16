@@ -2,6 +2,7 @@
 import { chromium } from "playwright";
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 const artifacts =
@@ -14,7 +15,11 @@ try {
   await community(f);
   await f.app.listen({ port: 3000, host: "127.0.0.1" });
   browser = await chromium.launch({
-    executablePath: process.env.CHROMIUM_PATH || "/usr/bin/chromium",
+    executablePath:
+      process.env.CHROMIUM_PATH ||
+      (existsSync("/usr/bin/chromium")
+        ? "/usr/bin/chromium"
+        : chromium.executablePath()),
     headless: true,
     args: ["--no-sandbox"],
   });
