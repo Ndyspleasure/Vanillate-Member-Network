@@ -1,6 +1,13 @@
 import { readdir } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
-for (const dir of ["src", "scripts", "public", "test", "integrations"])
+for (const dir of [
+  "src",
+  "scripts",
+  "public",
+  "test",
+  "integrations",
+  "test-postgres",
+])
   for (const file of await readdir(dir)) {
     if (!file.endsWith(".js")) continue;
     const r = spawnSync(process.execPath, ["--check", `${dir}/${file}`], {
@@ -9,3 +16,8 @@ for (const dir of ["src", "scripts", "public", "test", "integrations"])
     if (r.status) process.exit(r.status);
   }
 console.info("JavaScript syntax checks passed");
+
+const entry = spawnSync(process.execPath, ["--check", "index.js"], {
+  stdio: "inherit",
+});
+if (entry.status) process.exit(entry.status);

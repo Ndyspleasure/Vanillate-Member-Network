@@ -1,5 +1,7 @@
 # Deployment dan maintenance
 
+> Target hosting yang dipilih adalah Wispbyte. Ikuti [panduan Wispbyte](wispbyte.md) sebagai runbook terbaru; bagian di bawah menyimpan konteks MVP awal, termasuk beberapa keterbatasan yang sudah ditangani pada readiness update.
+
 ## 1. Application Discord terpisah
 
 1. Buka Discord Developer Portal, buat application **Vanillate Member Network**, lalu buat botnya. Jangan memakai application atau token bot utama.

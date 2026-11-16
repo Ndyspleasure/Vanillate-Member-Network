@@ -212,6 +212,24 @@ test("rate limit schedules bounded retry and persists global backoff", async () 
       await f.db.query("SELECT status,next_attempt_at FROM member_network.jobs")
     ).rows[0];
     assert.equal(r.status, "retry");
+    await f.db.query(
+      "UPDATE member_network.jobs SET attempts=4,next_attempt_at=now()",
+    );
+    await f.work.runOne();
+    assert.equal(
+      (await f.db.query("SELECT status FROM member_network.jobs")).rows[0]
+        .status,
+      "failed",
+    );
+    assert(
+      new Date(
+        (
+          await f.db.query(
+            "SELECT value FROM member_network.runtime WHERE key='discord_backoff'",
+          )
+        ).rows[0].value,
+      ) > new Date(),
+    );
     assert(new Date(r.next_attempt_at) > new Date());
     assert.equal(
       (await f.db.query("SELECT count(*) FROM member_network.runtime")).rows[0]

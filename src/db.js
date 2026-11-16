@@ -6,6 +6,7 @@ export function database(url) {
     connectionTimeoutMillis: 5000,
     statement_timeout: 15000,
   });
+  pool.on("error", () => console.error("Database pool connection interrupted"));
   return {
     query: (sql, args) => pool.query(sql, args),
     async tx(fn) {

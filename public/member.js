@@ -185,3 +185,18 @@ refresh().catch((e) => {
   );
   notify(e.message, true);
 });
+
+$("#delete-account").addEventListener("click", async () => {
+  if (
+    !confirm(
+      "Hapus identitas Member Network dan cabut seluruh persetujuan? Tindakan ini tidak mengeluarkanmu dari server Discord.",
+    )
+  )
+    return;
+  try {
+    await api("/api/me/delete", { method: "POST", body: "{}" });
+    location.href = "/";
+  } catch (e) {
+    notify(e.message, true);
+  }
+});

@@ -1,5 +1,7 @@
 # Implementasi MVP dan batas verifikasi
 
+> Pembaruan readiness Wispbyte: lihat [panduan deployment Wispbyte](wispbyte.md). Entry point panel bot, port allocation, preflight, role DB khusus, upgrade schema, penghapusan/retensi, keyring/rotasi dan pengujian PostgreSQL nyata kini tersedia. Catatan keterbatasan versi MVP di bawah adalah histori awal dan digantikan rincian terbaru di panduan tersebut.
+
 Implementasi ini melanjutkan rancangan Stage 1 dengan aplikasi yang dapat dijalankan, bukan hanya mockup. Keputusan implementasi yang berbeda dari rencana awal dicatat di sini; dokumen Stage 1 tetap menjadi catatan historis.
 
 ## Komponen yang tersedia

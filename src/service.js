@@ -65,7 +65,11 @@ export function service(db, crypt, discord, config) {
       [hash(raw), kind],
     );
   }
-  async function revokeConnection(memberId, actor) {
+  async function revokeConnection(
+    memberId,
+    actor,
+    { deleteIdentity = false } = {},
+  ) {
     // Preserve encrypted tokens only until the revocation worker succeeds, never expose them.
     await db.tx(async (tx) => {
       const m = await one(
@@ -75,8 +79,8 @@ export function service(db, crypt, discord, config) {
       );
       if (!m) throw new Problem(404, "Anggota tidak ditemukan");
       await tx.query(
-        "UPDATE member_network.members SET connection_status='revoked',updated_at=now() WHERE id=$1",
-        [memberId],
+        "UPDATE member_network.members SET connection_status='revoked',updated_at=now(),delete_requested_at=CASE WHEN $2 THEN now() ELSE delete_requested_at END WHERE id=$1",
+        [memberId, deleteIdentity],
       );
       await tx.query(
         "UPDATE member_network.consents SET revoked_at=now() WHERE member_id=$1 AND revoked_at IS NULL",

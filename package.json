@@ -4,13 +4,17 @@
   "description": "Layanan promosi komunitas Discord dengan application, bot, dan backend terpisah dari Vanillate.ID.",
   "scripts": {
     "test": "node --test --test-concurrency=1 test/*.test.js",
-    "start": "node --env-file-if-exists=.env src/server.js",
+    "start": "node index.js",
     "dev": "node --watch --env-file-if-exists=.env src/server.js",
     "check": "node scripts/check.js",
     "db:migrate": "node --env-file-if-exists=.env scripts/migrate.js",
     "test:browser": "node scripts/browser-test.js",
     "db:cleanup": "node --env-file-if-exists=.env scripts/cleanup.js",
-    "format": "prettier --write src public scripts test integrations docs README.md claudereport.md package.json .github"
+    "format": "prettier --write src public scripts test integrations docs README.md claudereport.md package.json .github",
+    "preflight": "node --env-file-if-exists=.env scripts/preflight.js",
+    "db:provision-runtime": "node --env-file-if-exists=.env scripts/provision-runtime.js",
+    "db:rotate-key": "node --env-file-if-exists=.env scripts/rotate-key.js",
+    "test:postgres": "node --test --test-concurrency=1 test-postgres/*.test.js"
   },
   "repository": {
     "type": "git",
