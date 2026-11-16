@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>Admin | Vanillate Member Network</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script type="module" src="/admin.js"></script>
+  </head>
+  <body>
+    <section id="login" class="panel login">
+      <a class="logo" href="/"
+        ><i>v</i><span>vanillate<small>Member Network</small></span></a
+      >
+      <h1>Selamat datang kembali.</h1>
+      <p>
+        Masuk dengan akun Supabase CMS yang telah diberi akses oleh operator
+        layanan.
+      </p>
+      <form id="login-form">
+        <label
+          >Email admin<input
+            type="email"
+            name="email"
+            autocomplete="username"
+            required /></label
+        ><label
+          >Kata sandi<input
+            type="password"
+            name="password"
+            autocomplete="current-password"
+            required /></label
+        ><button type="submit">Masuk ke panel →</button>
+      </form>
+      <p class="muted">
+        Hak akses Member Network ditetapkan secara terpisah oleh operator.
+      </p>
+      <a class="muted" href="/">← Kembali ke komunitas</a>
+    </section>
+    <div id="shell" class="app-shell" hidden>
+      <aside class="sidebar">
+        <a class="logo" href="/"
+          ><i>v</i><span>vanillate<small>Member Network</small></span></a
+        >
+        <div>
+          <div class="eyebrow">Workspace</div>
+          <nav class="nav" aria-label="Navigasi admin">
+            <button class="active" data-view="overview">
+              <span>◫</span> Ringkasan</button
+            ><button data-view="members"><span>♧</span> Anggota</button
+            ><button data-view="communities"><span>✳</span> Komunitas</button
+            ><button data-view="campaigns"><span>↗</span> Campaign</button
+            ><button data-view="analytics"><span>▥</span> Analitik</button
+            ><button data-view="audit"><span>≡</span> Audit aktivitas</button>
+          </nav>
+        </div>
+        <div class="sidebar-bottom">
+          VANILLATE ECOSYSTEM<br />Layanan Member Network mandiri.<br /><a
+            href="/"
+            >Lihat katalog publik ↗</a
+          >
+        </div>
+      </aside>
+      <main class="main">
+        <header class="admin-header">
+          <div>
+            <div class="eyebrow">
+              Member Network / <span id="breadcrumb">Ringkasan</span>
+            </div>
+            <h1 id="page-title">Ringkasan jaringan</h1>
+            <p>Kelola koneksi yang berarti untuk komunitasmu.</p>
+          </div>
+          <div class="actions">
+            <span id="role" class="badge">Admin</span
+            ><button id="refresh" class="secondary small">↻ Perbarui</button
+            ><button id="logout" class="secondary small">Keluar</button>
+          </div>
+        </header>
+        <section id="overview-view">
+          <div class="metrics" id="metrics"></div>
+          <div class="stats-layout">
+            <div class="panel">
+              <div class="section-heading">
+                <h3>Aktivitas auto-join</h3>
+                <span class="badge">Sesuai persetujuan</span>
+              </div>
+              <div id="join-bars"></div>
+            </div>
+            <div class="panel">
+              <div class="eyebrow">Kesehatan layanan</div>
+              <h2>Jaringan yang terkendali.</h2>
+              <p>
+                Campaign hanya menjangkau anggota yang memberi izin untuk
+                komunitas tujuan. Koneksi dan persetujuan dapat dicabut kapan
+                saja.
+              </p>
+              <div id="join-state" class="callout"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Mulai dengan satu komunitas</h3>
+            <p>
+              Pasang bot Member Network di server, daftarkan komunitas, lalu
+              tinjau sebelum membuat campaign. Anggota memilih dan menyetujui
+              komunitas dari katalog publik.
+            </p>
+            <a class="button secondary" href="/">Buka katalog komunitas ↗</a>
+          </div>
+        </section>
+        <section id="data-view" hidden>
+          <div class="panel">
+            <div class="section-heading">
+              <div>
+                <h3 id="list-title">Data jaringan</h3>
+                <p id="list-description" class="muted"></p>
+              </div>
+              <button id="create">+ Tambahkan</button>
+            </div>
+            <div id="data-table"></div>
+            <button id="load-more" class="secondary small" hidden>
+              Muat berikutnya
+            </button>
+          </div>
+        </section>
+        <section id="analytics-view" hidden>
+          <div class="panel">
+            <h3>Hasil 30 hari terakhir</h3>
+            <p>
+              Anggota yang sudah berada di server tidak dihitung sebagai
+              konversi baru. Status pending masih menunggu screening Discord.
+            </p>
+            <div id="daily-table"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <dialog class="dialog" id="community-dialog">
+      <h2>Daftarkan komunitas</h2>
+      <p>
+        Bot Member Network harus sudah terpasang. Komunitas baru masuk antrean
+        tinjauan.
+      </p>
+      <form id="community-form">
+        <label
+          >Discord Server ID<input
+            name="guild_id"
+            inputmode="numeric"
+            pattern="[0-9]{17,20}"
+            required /></label
+        ><label
+          >Nama komunitas<input
+            name="name"
+            minlength="2"
+            maxlength="100"
+            required /></label
+        ><label
+          >Deskripsi<textarea
+            name="description"
+            maxlength="1000"
+            required
+          ></textarea>
+        </label>
+        <div class="row">
+          <label
+            >Bahasa<select name="language">
+              <option value="id">Indonesia</option>
+              <option value="en">English</option>
+            </select></label
+          ><label
+            >Minat, pisahkan dengan koma<input
+              name="tags"
+              maxlength="300"
+              placeholder="gaming, musik"
+          /></label>
+        </div>
+        <div class="actions">
+          <button type="submit">Daftarkan komunitas</button
+          ><button type="button" class="secondary close-dialog">Batal</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog class="dialog" id="campaign-dialog">
+      <h2>Campaign baru</h2>
+      <p>
+        Campaign mengambil anggota dengan persetujuan aktif saat tombol Mulai
+        ditekan. Tekan Mulai kembali untuk mengambil persetujuan baru, tetap
+        sesuai batas.
+      </p>
+      <form id="campaign-form">
+        <label
+          >Nama campaign<input
+            name="name"
+            minlength="2"
+            maxlength="100"
+            required /></label
+        ><label
+          >Komunitas tujuan<select
+            name="community_id"
+            id="community-select"
+            required
+          ></select
+        ></label>
+        <div class="row">
+          <label
+            >Mulai<input
+              name="starts_at"
+              type="datetime-local"
+              required /></label
+          ><label
+            >Selesai<input name="ends_at" type="datetime-local" required
+          /></label>
+        </div>
+        <label
+          >Maksimum anggota<input
+            name="limit"
+            type="number"
+            min="1"
+            max="1000"
+            value="100"
+            required /></label
+        ><label
+          >Filter minat, pisahkan dengan koma<input
+            name="tags"
+            maxlength="300"
+            placeholder="Kosong untuk semua minat"
+        /></label>
+        <div class="actions">
+          <button type="submit">Simpan draf</button
+          ><button type="button" class="secondary close-dialog">Batal</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog class="dialog" id="activity-dialog">
+      <h2>Riwayat aktivitas anggota</h2>
+      <div id="member-activity"></div>
+      <button type="button" class="secondary close-dialog">Tutup</button>
+    </dialog>
+    <div id="status" class="status" role="status" hidden></div>
+  </body>
+</html>

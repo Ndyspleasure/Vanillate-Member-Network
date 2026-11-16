@@ -1,0 +1,44 @@
+{
+  "name": "vanillate-member-network",
+  "version": "1.0.0",
+  "description": "Layanan promosi komunitas Discord dengan application, bot, dan backend terpisah dari Vanillate.ID.",
+  "scripts": {
+    "test": "node --test --test-concurrency=1 test/*.test.js",
+    "start": "node --env-file-if-exists=.env src/server.js",
+    "dev": "node --watch --env-file-if-exists=.env src/server.js",
+    "check": "node scripts/check.js",
+    "db:migrate": "node --env-file-if-exists=.env scripts/migrate.js",
+    "test:browser": "node scripts/browser-test.js",
+    "db:cleanup": "node --env-file-if-exists=.env scripts/cleanup.js",
+    "format": "prettier --write src public scripts test integrations docs README.md claudereport.md package.json .github"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ndyspleasure/Vanillate-Member-Network.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Ndyspleasure/Vanillate-Member-Network/issues"
+  },
+  "homepage": "https://github.com/Ndyspleasure/Vanillate-Member-Network#readme",
+  "private": true,
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@fastify/cookie": "11.1.5",
+    "@fastify/rate-limit": "11.2.2",
+    "@fastify/static": "10.1.11",
+    "fastify": "5.12.8",
+    "pg": "8.23.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.16",
+    "playwright": "1.65.1",
+    "prettier": "3.6.2"
+  }
+}

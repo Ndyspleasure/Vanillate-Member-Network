@@ -1,13 +1,20 @@
-# Laporan perkembangan Vanillate Member Network
+# Laporan perkembangan Member Network
 
-## Stage 1. 16 November 2026
+## Implementasi MVP, 16 November 2026
 
-Audit repository dan metadata Supabase CMS serta rancangan tersedia di `docs/stage-1-architecture.md`. Status dokumentasi saja. Belum ada runtime, migration, Discord Application baru, atau integrasi yang telah diuji. Koreksi pemilik: `guilds.join` diperbolehkan.
+Kode backend, UI anggota/admin, worker bot REST, database bootstrap, adapter CMS dan dokumentasi deployment tersedia. Rancangan Stage1 dilanjutkan dengan scope `identify guilds.join` sesuai koreksi pemilik.
+
+Implementasi dan perbedaan terhadap rancangan awal: `docs/implementation.md`. Konfigurasi dan acceptance test host: `docs/deployment.md`. API dan adapter CMS: `docs/api.md`.
+
+## Verifikasi lokal
+
+Pemeriksaan sintaks, tes API/database/worker/upstream dengan PGlite dan layanan eksternal tiruan, serta browser desktop/mobile dijalankan. Run penuh 22 tes lolos, ditambah tes regresi penutupan campaign. Pemeriksaan browser desktop/mobile lolos. Audit dependency produksi melaporkan nol kerentanan. Hasil final juga dicatat di PR. Tidak ada produksi yang disentuh. Pengujian browser mencakup alur admin dan member sampai hasil auto-join tiruan serta pencabutan consent.
 
 ## Pekerjaan terbuka
 
-- MN-001: Tinjau rancangan dan tetapkan model persetujuan auto-join, host dan anggaran kuota. Default rancangan persetujuan per komunitas.
-- MN-002: Sebelum implementasi, selesaikan pembacaan penuh bagian CLAUDE.md/claudereport.md bot yang keluaran alatnya terpotong; jangan mengklaim audit instruksi baris demi baris lengkap.
-- MN-003: Verifikasi dokumentasi resmi OAuth2/Add Guild Member dan Supabase terkini. Fetch changelog mendapat 403, dua path raw Discord mendapat 404.
-- MN-004: Tinjau dan verifikasi otorisasi CMS di lingkungan terisolasi sebelum aktivasi fitur sensitif. Detail audit keamanan disimpan dalam catatan internal.
-- MN-005: Stage 2 sampai 6 belum dimulai. Gunakan matriks penerimaan dalam dokumen arsitektur dan laporkan bukti aktual tiap tahap.
+- MN-001: Operator membuat Discord Application baru dan memasukkan secret hanya ke host backend. Verifikasi bot, permission dan OAuth callback live pada test guild.
+- MN-002: Review bootstrap SQL, backup dan jalankan migrasi secara eksplisit pada database CMS existing. Uji TLS dan role runtime terbatas; belum ada migrasi produksi.
+- MN-003: Pasang service mandiri, origin HTTPS, UUID allowlist dan cleanup harian. Auto-join bawaan mati sampai acceptance test selesai.
+- MN-004: Integrasi menu/halaman website CMS existing memerlukan perubahan repo website terpisah. Adapter API tersedia, panel admin layanan ini sudah ada.
+- MN-005: Portal mandiri untuk admin server umum, verifikasi izin individu Discord, retensi/penghapusan data member/job, multikey rotation, observasi membership dan rekonsiliasi hasil unknown belum tersedia. Jangan mengklaim fitur ini selesai.
+- MN-006: Sebelum menambah replika, uji PostgreSQL nyata, distributed rate limiting dan konkurensi. Tes PGlite tidak menggantikan uji tersebut.

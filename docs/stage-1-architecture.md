@@ -1,21 +1,23 @@
 # Stage 1. Audit dan rancangan arsitektur
 
+> Catatan historis sebelum implementasi. Status terbaru, keputusan implementasi dan batas verifikasi ada di [implementation.md](implementation.md).
+
 Tanggal: 16 November 2026, WIB. Status: rancangan untuk ditinjau, bukan implementasi terverifikasi.
 
 ## 1. Lingkup dan bukti audit
 
 Audit dilakukan pada checkout lokal dan metadata database CMS melalui SELECT saja. Tidak membaca data member, token, atau secret. Tidak membuat project Supabase, aplikasi Discord, tabel, migration, atau deployment.
 
-| Komponen | Hasil |
-|---|---|
-| Repository Member Network | Kloning sukses, remote Ndyspleasure/Vanillate-Member-Network, belum memiliki commit atau kode |
-| Website CMS | Astro, Tailwind, TypeScript dan Supabase; hosting statis |
-| Bot utama | Node.js, discord.js dan PostgreSQL; runtime terpisah |
-| Database CMS | Infrastruktur CMS existing; identitas deployment tidak dipublikasikan |
-| Database pemain | Terpisah dari CMS dan tidak digunakan layanan baru |
-| Model admin | `public.admin_users`, id UUID, username, display_name, role, last_login_at, created_at; role owner/admin/viewer |
-| Integrasi lama | `bot_commands`, `bot_panel_snapshots`, partnership_campaigns, guild_* dan share_* sudah ada; tidak digunakan ulang untuk pekerjaan layanan baru |
-| Namespace baru | Tidak ditemukan tabel public dengan prefix literal `mn_`; pengecekan ulang wajib sebelum migration |
+| Komponen                  | Hasil                                                                                                                                            |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Repository Member Network | Kloning sukses, remote Ndyspleasure/Vanillate-Member-Network, belum memiliki commit atau kode                                                    |
+| Website CMS               | Astro, Tailwind, TypeScript dan Supabase; hosting statis                                                                                         |
+| Bot utama                 | Node.js, discord.js dan PostgreSQL; runtime terpisah                                                                                             |
+| Database CMS              | Infrastruktur CMS existing; identitas deployment tidak dipublikasikan                                                                            |
+| Database pemain           | Terpisah dari CMS dan tidak digunakan layanan baru                                                                                               |
+| Model admin               | `public.admin_users`, id UUID, username, display_name, role, last_login_at, created_at; role owner/admin/viewer                                  |
+| Integrasi lama            | `bot_commands`, `bot_panel_snapshots`, partnership*campaigns, guild*_ dan share\__ sudah ada; tidak digunakan ulang untuk pekerjaan layanan baru |
+| Namespace baru            | Tidak ditemukan tabel public dengan prefix literal `mn_`; pengecekan ulang wajib sebelum migration                                               |
 
 Acuan yang dibaca: CLAUDE.md bot dan website, claudereport.md bot, package.json kedua repo, astro.config.mjs, src/lib/supabase.ts, src/lib/admin-auth.ts, src/lib/admin-menu.ts, supabase/schema.sql, supabase/functions/cms-read/index.ts dan logic.ts, docs/ADMIN-CMS.md. Dokumen panjang dibaca bertahap; beberapa keluaran alat terpotong sehingga inventaris ini tidak dianggap audit seluruh kode atau semua instruksi baris demi baris yang belum tampil penuh.
 
@@ -32,7 +34,7 @@ Model otorisasi CMS perlu ditinjau dan diuji di lingkungan terisolasi sebelum la
 3. Gunakan Supabase CMS yang sudah ada untuk data layanan ini sebagai integrasi CMS, bukan data gameplay. Prefix `mn_` di public untuk metadata layanan; schema non-exposed `member_network_private` untuk kredensial dan state sensitif. Penggunaan CMS berbagi kuota dan harus diukur sebelum peluncuran.
 4. API dan worker dapat dijalankan sebagai dua proses Node terpisah dalam satu deployment layanan. Bot memiliki application, token, konfigurasi dan supervisor sendiri. Backend tidak membutuhkan bot utama hidup.
 5. CMS memanggil HTTPS API baru langsung dengan JWT Supabase CMS. Backend memverifikasi token melalui Supabase Auth dan membaca role aktual, tidak mempercayai role/body browser atau user_metadata. Mutasi sensitif memeriksa role tanpa cache.
-6. Migrasi domain mn_* dimiliki repo Member Network. Tidak menduplikasi DDL di website. Perubahan izin admin_users dimiliki repo website sebagai perbaikan tersendiri.
+6. Migrasi domain mn\_\* dimiliki repo Member Network. Tidak menduplikasi DDL di website. Perubahan izin admin_users dimiliki repo website sebagai perbaikan tersendiri.
 
 ```mermaid
 flowchart TD
@@ -70,20 +72,20 @@ Disconnect: tandai koneksi dicabut dan hentikan job dahulu, revoke grant Discord
 
 ## 5. Model data konseptual, belum DDL
 
-| Entitas | Data dan batasan utama |
-|---|---|
-| mn_members | UUID, Discord ID text unik, username, registered_at, connection_status terpisah dari account_status, disconnected_at |
-| private.oauth_connections | member_id unik, scopes, access/refresh ciphertext, nonce/tag/key_version, expires_at, revoked_at; tidak ada token plaintext |
-| private.oauth_states | state_hash unik, session binding, tujuan, expires_at, consumed_at |
-| mn_communities | guild_id text unik, nama, deskripsi, tags, bahasa, status tinjauan, bot presence, verified_admin_id |
-| mn_community_admins | komunitas dan identitas pengelola, sumber dan waktu verifikasi izin Discord; jangan menerima guild_id sebagai bukti admin |
-| mn_member_interests | member_id, tag; unik pasangan |
-| mn_join_consents | member, komunitas, versi penjelasan, granted_at, expires_at, revoked_at |
-| mn_campaigns | komunitas, target tags/bahasa, jadwal, status draft/approved/running/paused/completed, batas jumlah dan laju |
-| private.join_jobs | idempotency key, consent_id, campaign_id, member_id, status, attempts, next_attempt_at, lease_until; unik campaign/member/komunitas |
-| mn_join_results | job_id unik, hasil added/already_member/pending/failed/unknown, kode error aman, waktu |
-| mn_analytics_daily | agregat campaign/tanggal/event, tanpa token atau isi profil |
-| mn_audit_logs | aktor, aksi, objek, hasil, request_id, timestamp; tidak memuat code, token atau body mentah |
+| Entitas                   | Data dan batasan utama                                                                                                              |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| mn_members                | UUID, Discord ID text unik, username, registered_at, connection_status terpisah dari account_status, disconnected_at                |
+| private.oauth_connections | member_id unik, scopes, access/refresh ciphertext, nonce/tag/key_version, expires_at, revoked_at; tidak ada token plaintext         |
+| private.oauth_states      | state_hash unik, session binding, tujuan, expires_at, consumed_at                                                                   |
+| mn_communities            | guild_id text unik, nama, deskripsi, tags, bahasa, status tinjauan, bot presence, verified_admin_id                                 |
+| mn_community_admins       | komunitas dan identitas pengelola, sumber dan waktu verifikasi izin Discord; jangan menerima guild_id sebagai bukti admin           |
+| mn_member_interests       | member_id, tag; unik pasangan                                                                                                       |
+| mn_join_consents          | member, komunitas, versi penjelasan, granted_at, expires_at, revoked_at                                                             |
+| mn_campaigns              | komunitas, target tags/bahasa, jadwal, status draft/approved/running/paused/completed, batas jumlah dan laju                        |
+| private.join_jobs         | idempotency key, consent_id, campaign_id, member_id, status, attempts, next_attempt_at, lease_until; unik campaign/member/komunitas |
+| mn_join_results           | job_id unik, hasil added/already_member/pending/failed/unknown, kode error aman, waktu                                              |
+| mn_analytics_daily        | agregat campaign/tanggal/event, tanpa token atau isi profil                                                                         |
+| mn_audit_logs             | aktor, aksi, objek, hasil, request_id, timestamp; tidak memuat code, token atau body mentah                                         |
 
 Kunci relasi, check status, indexes cursor pagination dan FK ditentukan dalam migration setelah inspeksi ulang schema. Simpan Discord snowflake sebagai text agar tidak kehilangan presisi JavaScript.
 
@@ -93,17 +95,17 @@ RLS aktif pada seluruh tabel baru; private schema tidak diekspos dan privileges 
 
 Prefix `/v1/member-network`. Semua list cursor pagination, batas default 25, maksimum 100, field allowlist. ID divalidasi; operasi ditulis ke audit. Error terstruktur dengan request_id, tanpa stack/secret.
 
-| Kelompok | Operasi | Izin |
-|---|---|---|
-| OAuth | POST /registrations, GET /oauth/start, GET /oauth/callback | Admin membuat tautan; pemilik Discord menyetujui melalui sesi sekali pakai |
-| Member | GET /members, GET /members/:id/activity | owner/admin; viewer hanya agregat tanpa identitas |
-| Member | PATCH /members/:id/status, POST /members/:id/disconnect | owner/admin; pemilik akun juga dapat disconnect melalui sesi anggota |
-| Community | GET/POST/PATCH /communities | admin CMS; klaim pengelola server perlu verifikasi Discord |
-| Campaign | GET/POST/PATCH /campaigns | owner/admin; mulai/jeda perlu pemeriksaan ulang dan audit |
-| Consent | POST/DELETE /me/consents/:communityId | pemilik akun; admin tidak dapat memalsukan persetujuan |
-| Catalog | GET /catalog, GET /me/recommendations | hanya komunitas disetujui; rekomendasi personal perlu sesi anggota |
-| Analytics | GET /analytics | agregat owner/admin/viewer; tanpa daftar identitas |
-| Health | GET /health/live, GET /health/ready | output publik minimum, detail operasi khusus owner |
+| Kelompok  | Operasi                                                    | Izin                                                                       |
+| --------- | ---------------------------------------------------------- | -------------------------------------------------------------------------- |
+| OAuth     | POST /registrations, GET /oauth/start, GET /oauth/callback | Admin membuat tautan; pemilik Discord menyetujui melalui sesi sekali pakai |
+| Member    | GET /members, GET /members/:id/activity                    | owner/admin; viewer hanya agregat tanpa identitas                          |
+| Member    | PATCH /members/:id/status, POST /members/:id/disconnect    | owner/admin; pemilik akun juga dapat disconnect melalui sesi anggota       |
+| Community | GET/POST/PATCH /communities                                | admin CMS; klaim pengelola server perlu verifikasi Discord                 |
+| Campaign  | GET/POST/PATCH /campaigns                                  | owner/admin; mulai/jeda perlu pemeriksaan ulang dan audit                  |
+| Consent   | POST/DELETE /me/consents/:communityId                      | pemilik akun; admin tidak dapat memalsukan persetujuan                     |
+| Catalog   | GET /catalog, GET /me/recommendations                      | hanya komunitas disetujui; rekomendasi personal perlu sesi anggota         |
+| Analytics | GET /analytics                                             | agregat owner/admin/viewer; tanpa daftar identitas                         |
+| Health    | GET /health/live, GET /health/ready                        | output publik minimum, detail operasi khusus owner                         |
 
 Halaman rencana di website: `/admin/member-network`, `/members`, `/communities`, `/campaigns`, `/analytics` di bawah prefix admin tersebut. Gunakan guard dan menu admin yang ada, esc() untuk data Discord, fetch ke API lewat konfigurasi publik URL saja. Jangan mengirim bearer CMS pada domain selain origin API yang ditentukan. Halaman anggota terpisah dari CMS admin, walaupun menggunakan website yang sama; sesi anggota opaque HttpOnly di backend, bukan akun admin baru.
 
@@ -135,14 +137,14 @@ Deploy rencana ke proses Node tersendiri (host dipilih kemudian), user OS dan PM
 
 ## 9. Tahapan berikut dan kriteria penerimaan
 
-| Stage | Hasil yang harus diverifikasi |
-|---|---|
-| 1 | Audit dan rancangan tersedia; temuan/ketidakpastian dicatat, runtime belum dibuat |
-| 2 | Application terpisah, konfigurasi secret, Authorization Code Flow, state replay/expired/wrong-session ditolak, scope identify guilds.join diverifikasi, refresh/revoke diuji |
-| 3 | Migration aditif + rollback aman, RLS/grants diuji per role, transaksi job dan lease bersaing diuji, API dan auth negatif lulus; tanpa perubahan data pemain |
-| 4 | CMS members/community/campaign, verifikasi pengelola server, viewer read-only, IDOR/CSRF/XSS/CORS diuji di browser sampai database |
-| 5 | Rekomendasi dapat dijelaskan, consent dan kill switch bekerja, metrik dedup benar, load/query/egress diukur |
-| 6 | E2E Discord test guild: consent, join, already-member, pending screening, ban, bot hilang, token revoked, rate limit, restart dan disconnect; deployment/maintenance/restore runbook |
+| Stage | Hasil yang harus diverifikasi                                                                                                                                                        |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1     | Audit dan rancangan tersedia; temuan/ketidakpastian dicatat, runtime belum dibuat                                                                                                    |
+| 2     | Application terpisah, konfigurasi secret, Authorization Code Flow, state replay/expired/wrong-session ditolak, scope identify guilds.join diverifikasi, refresh/revoke diuji         |
+| 3     | Migration aditif + rollback aman, RLS/grants diuji per role, transaksi job dan lease bersaing diuji, API dan auth negatif lulus; tanpa perubahan data pemain                         |
+| 4     | CMS members/community/campaign, verifikasi pengelola server, viewer read-only, IDOR/CSRF/XSS/CORS diuji di browser sampai database                                                   |
+| 5     | Rekomendasi dapat dijelaskan, consent dan kill switch bekerja, metrik dedup benar, load/query/egress diukur                                                                          |
+| 6     | E2E Discord test guild: consent, join, already-member, pending screening, ban, bot hilang, token revoked, rate limit, restart dan disconnect; deployment/maintenance/restore runbook |
 
 Jangan menyatakan fitur selesai sebelum kode, tes dan integrasi nyata diverifikasi. Stage 2 sampai 6 belum dimulai. Verifikasi otorisasi CMS adalah prasyarat aktivasi sensitif.
 
